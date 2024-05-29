@@ -19,14 +19,16 @@ public interface PickUpOrderRepository extends BaseRepository<PickUpOrder, PickU
           + " AND (:#{#param.description} IS NULL OR lower(c.description) LIKE lower(concat('%',CONCAT(:#{#param.description},'%'))))"
           + " AND (:#{#param.totalAmount} IS NULL OR c.totalAmount = :#{#param.totalAmount}) "
           + " AND (:#{#param.paymentAmount} IS NULL OR c.paymentAmount = :#{#param.paymentAmount}) "
-          + " AND (:#{#param.drugStoreId} IS NULL OR lower(c.drugStoreId) LIKE lower(concat('%',CONCAT(:#{#param.drugStoreId},'%'))))"
+          + " AND (:#{#param.drugStoreId} IS NULL OR c.drugStoreId = :#{#param.drugStoreId})"
           + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
           + " AND (:#{#param.cusId} IS NULL OR c.cusId = :#{#param.cusId}) "
           + " AND (:#{#param.archivedId} IS NULL OR c.archivedId = :#{#param.archivedId}) "
+          + " AND (:#{#param.orderStatusIds} IS NULL OR c.orderStatusId IN :#{#param.orderStatusIds}) "
+          + " AND (:#{#param.fromDate} IS NULL OR c.orderDate >= :#{#param.fromDate}) "
+          + " AND (:#{#param.toDate} IS NULL OR c.orderDate <= :#{#param.toDate}) "
           + " ORDER BY c.id desc"
   )
   Page<PickUpOrder> searchPage(@Param("param") PickUpOrderReq param, Pageable pageable);
-  
   
   @Query("SELECT c FROM PickUpOrder c " +
          "WHERE 1=1 "

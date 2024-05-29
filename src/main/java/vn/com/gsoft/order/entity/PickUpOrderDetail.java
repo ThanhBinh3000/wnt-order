@@ -43,5 +43,8 @@ public class PickUpOrderDetail extends BaseEntity{
     private Long archivedId;
     @Column(name = "ReferenceId")
     private Long referenceId;
+
+    @Transient
+    private DrugToBuys drugToBuys;
 }
 

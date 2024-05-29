@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -22,23 +23,21 @@ public class DrugToBuys extends BaseEntity {
     @Id
     @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
     @Column(name = "StoreCode")
     private String storeCode;
     @Column(name = "DrugId")
-    private Integer drugId;
+    private Long drugId;
     @Column(name = "Quantity")
     private BigDecimal quantity;
     @Column(name = "UnitId")
-    private Integer unitId;
-    @Column(name = "Created")
-    private Date created;
+    private Long unitId;
     @Column(name = "CompleteDate")
     private Date completeDate;
     @Column(name = "Staff_UserId")
-    private Integer staffUserId;
+    private Long staffUserId;
     @Column(name = "StatusId")
-    private Integer statusId;
+    private Long statusId;
     @Column(name = "ReceiptNoteId")
     private Integer receiptNoteId;
     @Column(name = "InPrice")
@@ -47,5 +46,6 @@ public class DrugToBuys extends BaseEntity {
     private String description;
     @Column(name = "ArchivedId")
     private Integer archivedId;
+
 }
 

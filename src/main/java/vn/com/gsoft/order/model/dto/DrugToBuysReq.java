@@ -25,5 +25,7 @@ public class DrugToBuysReq extends BaseRequest {
     private BigDecimal inPrice;
     private String description;
     private Integer archivedId;
+    private Date fromDate;
+    private Date toDate;
 }
 

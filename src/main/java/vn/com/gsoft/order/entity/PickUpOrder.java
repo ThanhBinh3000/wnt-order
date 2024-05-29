@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -30,11 +31,25 @@ public class PickUpOrder extends BaseEntity {
     private BigDecimal paymentAmount;
     @Column(name = "DrugStoreId")
     private String drugStoreId;
+    @Column(name = "OrderStatusId")
+    private Long orderStatusId;
     @Column(name = "CusId")
     private Long cusId;
     @Column(name = "OrderDate")
     private Date orderDate;
     @Column(name = "ArchivedId")
     private Long archivedId;
+
+    @Transient
+    private int drugCount;
+
+    @Transient
+    private String cusName;
+
+    @Transient
+    private Long staffAssignId;
+
+    @Transient
+    List<UserProfile> listUserProfile;
 }
 

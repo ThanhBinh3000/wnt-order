@@ -4,6 +4,7 @@ import lombok.Data;
 import vn.com.gsoft.order.model.system.BaseRequest;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class PickUpOrderDetailReq extends BaseRequest {
@@ -20,4 +21,6 @@ public class PickUpOrderDetailReq extends BaseRequest {
     private Long drugToBuyId;
     private Long archivedId;
     private Long referenceId;
+
+    private List<Long> ids;
 }

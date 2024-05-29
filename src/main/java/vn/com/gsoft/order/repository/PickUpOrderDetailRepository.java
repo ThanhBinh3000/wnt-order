@@ -1,5 +1,6 @@
 package vn.com.gsoft.order.repository;
 
+import jakarta.persistence.Tuple;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import vn.com.gsoft.order.entity.PickUpOrderDetail;
 import vn.com.gsoft.order.model.dto.PickUpOrderDetailReq;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PickUpOrderDetailRepository extends BaseRepository<PickUpOrderDetail, PickUpOrderDetailReq, Long> {
@@ -52,5 +54,19 @@ public interface PickUpOrderDetailRepository extends BaseRepository<PickUpOrderD
           + " ORDER BY c.id desc"
   )
   List<PickUpOrderDetail> searchList(@Param("param") PickUpOrderDetailReq param);
+
+
+  List<PickUpOrderDetail> findAllByOrderIdAndRecordStatusId(Long orderId,Long recordStatusId);
+
+
+  @Query(value = "SELECT distinct c.OrderId AS orderId, n.Staff_UserId AS staffUserId"
+          + " FROM PickUpOrderDetail c"
+          + " JOIN DrugToBuys n ON c.DrugToBuy_Id = n.id"
+          + " WHERE n.Staff_UserId > 0"
+          + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
+          + " AND (:#{#param.ids.size() }  = 0 OR c.id IN (:#{#param.ids})) ",
+          nativeQuery = true
+  )
+  Optional<Tuple> searchStaffAssign(@Param("param") PickUpOrderDetailReq param);
 
 }

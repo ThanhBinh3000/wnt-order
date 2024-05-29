@@ -30,6 +30,14 @@ public class PickUpOrderController {
     }
 
 
+    @PostMapping(value = "assign-staff", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> assignStaff(@RequestBody PickUpOrderReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.assignStaff(objReq)));
+    }
+
+
+
     @PostMapping(value = PathContains.URL_SEARCH_LIST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<BaseResponse> colectionList(@RequestBody PickUpOrderReq objReq) throws Exception {
