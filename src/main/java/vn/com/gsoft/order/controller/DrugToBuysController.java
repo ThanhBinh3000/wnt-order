@@ -29,6 +29,24 @@ public class DrugToBuysController {
     return ResponseEntity.ok(ResponseUtils.ok(service.searchPage(objReq)));
   }
 
+  @PostMapping(value = "/cancel-drug-buy", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> cancelDrugBuy(@RequestBody DrugToBuysReq objReq) throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.cancelDrugBuy(objReq)));
+  }
+
+  @PostMapping(value = "/restore-drug-buy", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> restoreDrugBuy(@RequestBody DrugToBuysReq objReq) throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.restoreDrugBuy(objReq)));
+  }
+
+  @PostMapping(value = "/complete-drug-buy", produces = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public ResponseEntity<BaseResponse> completeDrugToBuy(@RequestBody DrugToBuysReq objReq) throws Exception {
+    return ResponseEntity.ok(ResponseUtils.ok(service.completeDrugToBuy(objReq)));
+  }
+
 
   @PostMapping(value = PathContains.URL_SEARCH_LIST, produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.OK)

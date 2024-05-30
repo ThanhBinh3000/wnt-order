@@ -14,18 +14,20 @@ import java.util.Date;
 public class DrugToBuysReq extends BaseRequest {
 
     private String storeCode;
-    private Integer drugId;
+    private Long drugId;
     private BigDecimal quantity;
-    private Integer unitId;
+    private Long unitId;
     private Date created;
     private Date completeDate;
-    private Integer staffUserId;
-    private Integer statusId;
-    private Integer receiptNoteId;
+    private Long staffUserId;
+    private Long statusId;
+    private Long receiptNoteId;
     private BigDecimal inPrice;
     private String description;
-    private Integer archivedId;
+    private Long archivedId;
     private Date fromDate;
     private Date toDate;
+
+    private Long pickUpOrderDetailId;
 }
 

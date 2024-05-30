@@ -48,7 +48,7 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
                                   PickUpOrderDetailRepository dtlRepo,
                                   KhachHangsRepository khachHangsRepository,
                                   UserProfileRepository userProfileRepository,
-                                   DrugToBuysRepository drugToBuysRepository,
+                                  DrugToBuysRepository drugToBuysRepository,
                                   ThuocsRepository thuocsRepository,
                                   InventoryRepository inventoryRepository) {
         super(hdrRepo);

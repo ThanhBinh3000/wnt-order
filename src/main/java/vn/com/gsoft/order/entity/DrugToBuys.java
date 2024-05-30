@@ -47,5 +47,22 @@ public class DrugToBuys extends BaseEntity {
     @Column(name = "ArchivedId")
     private Integer archivedId;
 
+    @Transient
+    private String statusName;
+
+    @Transient
+    private String staffUserName;
+
+    public String getStatusName() {
+        if (statusId == 1) {
+            return "Đã hoàn thành";
+        }
+        else if (statusId == 2) {
+            return "Đã huỷ";
+        }
+        else {
+            return "Chưa hoàn thành";
+        }
+    }
 }
 

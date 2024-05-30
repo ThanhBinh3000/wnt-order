@@ -46,5 +46,14 @@ public class PickUpOrderDetail extends BaseEntity{
 
     @Transient
     private DrugToBuys drugToBuys;
+
+    @Transient
+    private Thuocs thuocs;
+
+    @Transient
+    private PickUpOrder pickUpOrder;
+
+    @Transient
+    private String unitName;
 }
 

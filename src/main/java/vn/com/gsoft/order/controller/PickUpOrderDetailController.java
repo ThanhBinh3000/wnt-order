@@ -29,6 +29,11 @@ public class PickUpOrderDetailController {
         return ResponseEntity.ok(ResponseUtils.ok(service.searchPage(objReq)));
     }
 
+    @PostMapping(value = PathContains.URL_SEARCH_PAGE+"-confirm-delivery", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> searchPageDeliveryConfirm(@RequestBody PickUpOrderDetailReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.searchPageDeliveryConfirm(objReq)));
+    }
 
     @PostMapping(value = PathContains.URL_SEARCH_LIST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
