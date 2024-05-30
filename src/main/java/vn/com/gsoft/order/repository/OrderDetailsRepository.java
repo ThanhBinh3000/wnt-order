@@ -9,6 +9,7 @@ import vn.com.gsoft.order.entity.OrderDetails;
 import vn.com.gsoft.order.model.dto.OrderDetailsReq;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderDetailsRepository extends BaseRepository<OrderDetails, OrderDetailsReq, Long> {
@@ -58,5 +59,9 @@ public interface OrderDetailsRepository extends BaseRepository<OrderDetails, Ord
           + " ORDER BY c.id desc"
   )
   List<OrderDetails> searchList(@Param("param") OrderDetailsReq param);
+
+  void deleteAllByOrderId(Long idHdr);
+
+  List<OrderDetails> findAllByOrderId(Long id);
 
 }

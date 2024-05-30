@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Data
 @Builder
@@ -45,11 +46,23 @@ public class OrderDetails extends BaseEntity {
     private BigDecimal discount;
     @Column(name = "CreatedByStoreId")
     private Long createdByStoreId;
+    @Column(name = "RecordStatusId")
+    private Long recordStatusId;
     @Column(name = "SupplierStoreCode")
     private String supplierStoreCode;
     @Column(name = "InPrice")
     private BigDecimal inPrice;
     @Column(name = "IsPickUpGoods")
     private Boolean isPickUpGoods;
+    @Column(name="CreatedDate")
+    private Date createdDate;
+    @Column(name="CreatedByUserId")
+    private Long createdByUserId;
+    @Transient
+    private String maThuoc;
+    @Transient
+    private String tenThuoc;
+    @Transient
+    private String tenDonViTinhXuatLe;
 }
 
