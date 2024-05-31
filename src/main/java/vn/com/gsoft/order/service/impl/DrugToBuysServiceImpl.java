@@ -6,15 +6,20 @@ import org.springframework.stereotype.Service;
 import vn.com.gsoft.order.constant.EDrugToBuyStatus;
 import vn.com.gsoft.order.constant.RecordStatusContains;
 import vn.com.gsoft.order.entity.DrugToBuys;
+import vn.com.gsoft.order.entity.PhieuNhapChiTiets;
+import vn.com.gsoft.order.entity.PhieuNhaps;
 import vn.com.gsoft.order.entity.PickUpOrderDetail;
 import vn.com.gsoft.order.model.dto.DrugToBuysReq;
 import vn.com.gsoft.order.model.system.Profile;
 import vn.com.gsoft.order.repository.DrugToBuysRepository;
+import vn.com.gsoft.order.repository.PhieuNhapChiTietsRepository;
+import vn.com.gsoft.order.repository.PhieuNhapsRepository;
 import vn.com.gsoft.order.repository.PickUpOrderDetailRepository;
 import vn.com.gsoft.order.service.DrugToBuysService;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -25,12 +30,20 @@ public class DrugToBuysServiceImpl extends BaseServiceImpl<DrugToBuys, DrugToBuy
 	private DrugToBuysRepository hdrRepo;
 
 	private PickUpOrderDetailRepository pickUpOrderDetailRepository;
+
+	private PhieuNhapsRepository phieuNhapsRepository;
+
+	private PhieuNhapChiTietsRepository phieuNhapChiTietsRepository;
 	@Autowired
 	public DrugToBuysServiceImpl(DrugToBuysRepository hdrRepo,
-								 PickUpOrderDetailRepository pickUpOrderDetailRepository) {
+								 PickUpOrderDetailRepository pickUpOrderDetailRepository,
+								 PhieuNhapsRepository phieuNhapsRepository,
+								 PhieuNhapChiTietsRepository phieuNhapChiTietsRepository) {
 		super(hdrRepo);
 		this.hdrRepo = hdrRepo;
 		this.pickUpOrderDetailRepository = pickUpOrderDetailRepository;
+		this.phieuNhapsRepository = phieuNhapsRepository;
+		this.phieuNhapChiTietsRepository = phieuNhapChiTietsRepository;
 	}
 
 	@Override
@@ -99,9 +112,87 @@ public class DrugToBuysServiceImpl extends BaseServiceImpl<DrugToBuys, DrugToBuy
 				byId.get().setInPrice(req.getInPrice());
 				byId.get().setDescription(req.getDescription());
 				hdrRepo.save(byId.get());
+				tryToUpdateReceiptNoteFromDrugToBuy(byId.get(),req.getPickUpOrderDetailId());
 				return byId.get();
 			}
 		}
+
+
 		return null;
+	}
+
+
+	public void tryToUpdateReceiptNoteFromDrugToBuy(DrugToBuys drugToBuys,Long pickUpOrderDetailId) throws Exception {
+		Profile userInfo = this.getLoggedUser();
+		if (userInfo == null){
+			throw new Exception("Bad request.");
+		}
+		if(drugToBuys.getReceiptNoteId() > 0){
+			List<PhieuNhapChiTiets> phieuNhapCtiet = phieuNhapChiTietsRepository.findAllByPhieuNhapMaPhieuNhapAndRecordStatusIdAndThuocThuocId(drugToBuys.getReceiptNoteId(), RecordStatusContains.ACTIVE, drugToBuys.getDrugId());
+			if(!phieuNhapCtiet.isEmpty()){
+				phieuNhapCtiet.forEach(item -> {
+					item.setSoLuong(drugToBuys.getQuantity());
+					item.setGiaNhap(drugToBuys.getInPrice());
+				});
+				phieuNhapChiTietsRepository.saveAll(phieuNhapCtiet);
+				BigDecimal reduce = phieuNhapCtiet.stream().map(item -> item.getSoLuong().multiply(item.getGiaNhap())) // Chọn cột để tính tổng (ví dụ là cột 2)
+						.reduce(BigDecimal.valueOf(0), BigDecimal::add);
+				Optional<PhieuNhaps> byId = phieuNhapsRepository.findById(drugToBuys.getReceiptNoteId());
+				if(byId.isPresent()){
+					byId.get().setTongTien(reduce);
+					byId.get().setDaTra(reduce);
+					phieuNhapsRepository.save(byId.get());
+				}
+			}
+		}else{
+			Optional<PickUpOrderDetail> pickUpOrderDetailOpt = pickUpOrderDetailRepository.findByDrugToBuyId(drugToBuys.getId());
+			if(pickUpOrderDetailOpt.isEmpty()){
+				throw new Exception("Không tìm thấy PickUpOrderDetail theo DrugToBuyId"+drugToBuys.getId());
+			}
+			PickUpOrderDetail pickUpOrderDetail1 = pickUpOrderDetailOpt.get();
+			Optional<PhieuNhaps> phieuNhapsOpt = phieuNhapsRepository.findByPickUpOrderId(pickUpOrderDetail1.getOrderId());
+			Long idPhieuNhap = 0L;
+			if(phieuNhapsOpt.isPresent()){
+				idPhieuNhap = phieuNhapsOpt.get().getId();
+			}else{
+
+			}
+			PhieuNhapChiTiets phieuNhapChiTiets = new PhieuNhapChiTiets();
+			phieuNhapChiTiets.setDonViTinhMaDonViTinh(drugToBuys.getUnitId());
+			phieuNhapChiTiets.setGiaNhap(drugToBuys.getInPrice());
+			phieuNhapChiTiets.setPhieuNhapMaPhieuNhap(idPhieuNhap);
+			phieuNhapChiTiets.setSoLuong(drugToBuys.getQuantity());
+			phieuNhapChiTiets.setNhaThuocMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+			phieuNhapChiTiets.setThuocThuocId(drugToBuys.getDrugId());
+			phieuNhapChiTiets.setItemOrder(1);
+			phieuNhapChiTiets.setIsModified(true);
+			phieuNhapChiTietsRepository.save(phieuNhapChiTiets);
+			drugToBuys.setReceiptNoteId(idPhieuNhap);
+			hdrRepo.save(drugToBuys);
+
+			if(phieuNhapsOpt.isPresent()){
+				List<PhieuNhapChiTiets> phieuNhapCtiet = phieuNhapChiTietsRepository.findAllByPhieuNhapMaPhieuNhapAndRecordStatusId(drugToBuys.getReceiptNoteId(), RecordStatusContains.ACTIVE);
+				BigDecimal reduce = phieuNhapCtiet.stream().map(item -> item.getSoLuong().multiply(item.getGiaNhap())) // Chọn cột để tính tổng (ví dụ là cột 2)
+						.reduce(BigDecimal.valueOf(0), BigDecimal::add);
+				phieuNhapsOpt.get().setTongTien(reduce);
+				phieuNhapsOpt.get().setDaTra(reduce);
+				phieuNhapsRepository.save(phieuNhapsOpt.get());
+			}
+			//TODO
+//			MakeAffectedChangesRelatedReceiptNotes(storeCode, model.Staff_UserId, true, false, false, new int[] { noteId });
+			if (pickUpOrderDetailId != null && pickUpOrderDetailId > 0)
+			{
+//				autoUpdateInPricePickUpOrderByItemId(drugToBuys, pickUpOrderDetailId, idPhieuNhap);
+				Optional<PickUpOrderDetail> pickByIdOtp = pickUpOrderDetailRepository.findById(pickUpOrderDetailId);
+				if(pickByIdOtp.isPresent()){
+					pickByIdOtp.get().setInPrice(phieuNhapChiTiets.getGiaNhap());
+					pickUpOrderDetailRepository.save(pickByIdOtp.get());
+				}
+			}
+		}
+	}
+
+	private void autoUpdateInPricePickUpOrderByItemId(DrugToBuys drugToBuys,Long pickUpOrderDetailId,Long phieuNhapId){
+
 	}
 }
