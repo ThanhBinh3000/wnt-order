@@ -113,5 +113,7 @@ public interface PickUpOrderDetailRepository extends BaseRepository<PickUpOrderD
   )
   Page<PickUpOrderDetail> searchPageDeliveryConfirm(@Param("param") PickUpOrderDetailReq param, Pageable pageable);
 
+  Optional<PickUpOrderDetail> findByDrugToBuyId(Long drugToBuyId);
+
 
 }

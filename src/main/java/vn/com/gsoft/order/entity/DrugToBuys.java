@@ -39,7 +39,7 @@ public class DrugToBuys extends BaseEntity {
     @Column(name = "StatusId")
     private Long statusId;
     @Column(name = "ReceiptNoteId")
-    private Integer receiptNoteId;
+    private Long receiptNoteId;
     @Column(name = "InPrice")
     private BigDecimal inPrice;
     @Column(name = "Description")
