@@ -55,5 +55,12 @@ public class PickUpOrderDetail extends BaseEntity{
 
     @Transient
     private String unitName;
+
+    @Transient
+    private BigDecimal receiptQuantity = BigDecimal.ZERO;
+
+    @Transient
+    private BigDecimal deliveryQuantity = BigDecimal.ZERO;
+
 }
 

@@ -40,6 +40,9 @@ public class PickUpOrder extends BaseEntity {
     @Column(name = "ArchivedId")
     private Long archivedId;
 
+    @Column(name="updated")
+    private Date updated;
+
     @Transient
     private int drugCount;
 

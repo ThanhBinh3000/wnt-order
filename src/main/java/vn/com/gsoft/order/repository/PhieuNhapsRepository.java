@@ -14,6 +14,7 @@ import java.util.Optional;
 @Repository
 public interface PhieuNhapsRepository extends CrudRepository<PhieuNhaps, Long> {
 
+    Optional<PhieuNhaps> findByPickUpOrderIdAndRecordStatusId(Long pickUpOrderId,Long recordStatusId);
     Optional<PhieuNhaps> findByPickUpOrderId(Long pickUpOrderId);
 
 }

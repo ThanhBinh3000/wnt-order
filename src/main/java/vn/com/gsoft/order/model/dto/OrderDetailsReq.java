@@ -23,4 +23,5 @@ public class OrderDetailsReq extends BaseRequest {
     private String supplierStoreCode;
     private BigDecimal inPrice;
     private Boolean isPickUpGoods;
+    private Long pickUpOrderId;
 }

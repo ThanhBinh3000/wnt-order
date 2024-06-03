@@ -29,4 +29,7 @@ public class PickUpOrderDetailReq extends BaseRequest {
     private List<Long> orderStatusIds;
     private Date fromDate;
     private Date toDate;
+
+    private Long pickUpOrderId;
+    private Long phieuNhapId;
 }
