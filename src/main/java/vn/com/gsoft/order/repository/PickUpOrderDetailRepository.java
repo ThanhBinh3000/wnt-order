@@ -57,6 +57,7 @@ public interface PickUpOrderDetailRepository extends BaseRepository<PickUpOrderD
 
 
   List<PickUpOrderDetail> findAllByOrderIdAndRecordStatusId(Long orderId,Long recordStatusId);
+  List<PickUpOrderDetail> findAllByOrderId(Long orderId);
 
 
   @Query(value = "SELECT distinct c.OrderId AS orderId, n.Staff_UserId AS staffUserId"

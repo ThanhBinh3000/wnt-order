@@ -68,7 +68,7 @@ public class PickUpOrder extends BaseEntity {
         }else if(orderStatusId == OrderStatusId.ORDER_UPDATED){
             return "Đơn đã cập nhật";
         }else if(orderStatusId == OrderStatusId.COMMPLETED){
-            return "Đn đã xử lý";
+            return "Đơn đã xử lý";
         }
         return orderStatusName;
     }
