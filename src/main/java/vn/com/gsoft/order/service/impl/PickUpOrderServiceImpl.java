@@ -71,7 +71,6 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
         Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
         req.setRecordStatusId(RecordStatusContains.ACTIVE);
         req.setDrugStoreId(userInfo.getNhaThuoc().getMaNhaThuoc());
-        req.setOrderStatusIds(Arrays.asList(OrderStatusId.BUYER_NEW,OrderStatusId.ORDER_UPDATED));
         Page<PickUpOrder> pickUpOrders = hdrRepo.searchPage(req, pageable);
 
         UserProfileReq req1 = new UserProfileReq();
@@ -203,5 +202,29 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
             }
         }
         return pickUpOrders;
+    }
+
+    @Override
+    public boolean delete(Long id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+
+        Optional<PickUpOrder> optional = hdrRepo.findById(id);
+        if (optional.isEmpty()) {
+            throw new Exception("Không tìm thấy dữ liệu.");
+        }
+        optional.get().setRecordStatusId(RecordStatusContains.DELETED);
+        hdrRepo.save(optional.get());
+
+        List<PickUpOrderDetail> allByOrderId = dtlRepo.findAllByOrderId(optional.get().getId());
+        if(!allByOrderId.isEmpty()){
+            allByOrderId.forEach(item -> {
+                item.setRecordStatusId(RecordStatusContains.DELETED);
+            });
+            dtlRepo.saveAll(allByOrderId);
+        }
+
+        return true;
     }
 }
