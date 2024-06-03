@@ -1,14 +1,19 @@
 package vn.com.gsoft.order.model.dto;
 
+import jakarta.persistence.Column;
 import lombok.Data;
+import vn.com.gsoft.order.entity.OrderDetails;
 import vn.com.gsoft.order.model.system.BaseRequest;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class OrdersReq extends BaseRequest {
     private Long invoiceId;
+    private Long id;
     private String secureCode;
     private BigDecimal totalAmount;
     private BigDecimal totalPriceWithoutPromotion;
@@ -26,6 +31,7 @@ public class OrdersReq extends BaseRequest {
     private Date orderDate;
     private BigDecimal paymentAmount;
     private Boolean isDebt;
+    private Date createdDate;
     private String supplierDescription;
     private String description;
     private Integer orderNumber;
@@ -43,4 +49,7 @@ public class OrdersReq extends BaseRequest {
     private String customerFullName;
     private String customerPhone;
     private String customerCode;
+    private String name;
+    private Long recordStatusId;
+    private List<OrderDetails> chiTiets = new ArrayList<>();
 }

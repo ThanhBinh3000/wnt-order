@@ -64,4 +64,10 @@ public class OrdersController {
     public ResponseEntity<BaseResponse> delete(@Valid @RequestBody OrdersReq idSearchReq) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.delete(idSearchReq.getId())));
     }
+
+    @PostMapping(value = PathContains.URL_INIT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<BaseResponse> init(@RequestBody OrdersReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.init(objReq.getId())));
+    }
 }

@@ -86,5 +86,8 @@ public interface OrdersRepository extends BaseRepository<Orders, OrdersReq, Long
           + " ORDER BY c.id desc"
   )
   List<Orders> searchList(@Param("param") OrdersReq param);
+  @Query(value = "SELECT top 1 c.* from Orders c order by c.id desc ", nativeQuery = true)
+  Orders findIdMax();
+
 
 }
