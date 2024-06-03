@@ -89,6 +89,9 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
             byId.ifPresent(khachHangs -> order.setCusName(khachHangs.getTenKhachHang()));
 
 
+            Optional<UserProfile> userProfileOptional = userProfileRepository.findById(order.getCreatedByUserId());
+            userProfileOptional.ifPresent(userProfile -> order.setCreateUserName(userProfile.getTenDayDu()));
+
             order.setListUserProfile(listUserProfile);
 
             PickUpOrderDetailReq detailReq = new PickUpOrderDetailReq();
@@ -157,5 +160,48 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
             }
         }
         return listDetail;
+    }
+
+    @Override
+    public Page<PickUpOrder> searchPageAssginStaff(PickUpOrderReq req) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null){
+            throw new Exception("Bad request.");
+        }
+        Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
+        req.setRecordStatusId(RecordStatusContains.ACTIVE);
+        req.setDrugStoreId(userInfo.getNhaThuoc().getMaNhaThuoc());
+        req.setOrderStatusIds(Arrays.asList(OrderStatusId.BUYER_NEW,OrderStatusId.ORDER_UPDATED));
+        Page<PickUpOrder> pickUpOrders = hdrRepo.searchPage(req, pageable);
+
+        UserProfileReq req1 = new UserProfileReq();
+        req1.setMaNhaThuoc(userInfo.getNhaThuoc().getMaNhaThuoc());
+        req1.setHoatDong(true);
+        List<UserProfile> listUserProfile = userProfileRepository.searchList(req1);
+
+        for (PickUpOrder order : pickUpOrders.getContent()) {
+            List<PickUpOrderDetail> allByOrderId = dtlRepo.findAllByOrderIdAndRecordStatusId(order.getId(),RecordStatusContains.ACTIVE);
+            List<Long> collect = allByOrderId.stream().map(PickUpOrderDetail::getDrugId) // Extract the name field
+                    .distinct()           // Get distinct values
+                    .toList();
+            order.setDrugCount(collect.size());
+            Optional<KhachHangs> byId = khachHangsRepository.findById(order.getCusId());
+            byId.ifPresent(khachHangs -> order.setCusName(khachHangs.getTenKhachHang()));
+
+
+            order.setListUserProfile(listUserProfile);
+
+            PickUpOrderDetailReq detailReq = new PickUpOrderDetailReq();
+            detailReq.setIds(allByOrderId.stream().map(PickUpOrderDetail::getId) // Extract the name field
+                    .distinct()           // Get distinct values
+                    .toList());
+            Optional<Tuple> tupleOpt = dtlRepo.searchStaffAssign(detailReq);
+            if(tupleOpt.isPresent()){
+                Tuple tuple1 = tupleOpt.get();
+                Object o = tuple1.get(1);
+                order.setStaffAssignId(Long.parseLong(o.toString()));
+            }
+        }
+        return pickUpOrders;
     }
 }

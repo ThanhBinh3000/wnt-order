@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.com.gsoft.order.constant.OrderStatusId;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -54,5 +55,22 @@ public class PickUpOrder extends BaseEntity {
 
     @Transient
     List<UserProfile> listUserProfile;
+
+    @Transient
+    private String createUserName;
+
+    @Transient
+    private String orderStatusName;
+
+    public String getOrderStatusName() {
+        if (orderStatusId == OrderStatusId.BUYER_NEW) {
+            return "Đơn mới tạo";
+        }else if(orderStatusId == OrderStatusId.ORDER_UPDATED){
+            return "Đơn đã cập nhật";
+        }else if(orderStatusId == OrderStatusId.COMMPLETED){
+            return "Đn đã xử lý";
+        }
+        return orderStatusName;
+    }
 }
 

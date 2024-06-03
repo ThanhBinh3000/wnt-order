@@ -29,6 +29,12 @@ public class PickUpOrderController {
         return ResponseEntity.ok(ResponseUtils.ok(service.searchPage(objReq)));
     }
 
+    @PostMapping(value = PathContains.URL_SEARCH_PAGE+"-assign-staff", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<BaseResponse> searchPageAssginStaff(@RequestBody PickUpOrderReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.searchPageAssginStaff(objReq)));
+    }
+
 
     @PostMapping(value = "assign-staff", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.OK)
