@@ -13,6 +13,7 @@ import java.util.List;
 @Repository
 public interface OrdersRepository extends BaseRepository<Orders, OrdersReq, Long> {
   @Query("SELECT c FROM Orders c " +
+         "LEFT JOIN OrderDetails dtl ON dtl.orderId = c.id " +
          "WHERE 1=1 "
           + " AND (:#{#param.id} IS NULL OR c.id = :#{#param.id}) "
           + " AND (:#{#param.invoiceId} IS NULL OR c.invoiceId = :#{#param.invoiceId}) "
@@ -25,6 +26,10 @@ public interface OrdersRepository extends BaseRepository<Orders, OrdersReq, Long
           + " AND (:#{#param.discount} IS NULL OR c.discount = :#{#param.discount}) "
           + " AND (:#{#param.userId} IS NULL OR c.userId = :#{#param.userId}) "
           + " AND (:#{#param.recordStatusId} IS NULL OR c.recordStatusId = :#{#param.recordStatusId}) "
+          + " AND (:#{#param.orderNumber} IS NULL OR c.orderNumber = :#{#param.orderNumber}) "
+          + " AND (:#{#param.customerId} IS NULL OR c.createdByUserId = :#{#param.customerId}) "
+          + " AND (:#{#param.orderStatusId} IS NULL OR c.orderStatusId = :#{#param.orderStatusId}) "
+          + " AND (:#{#param.drugId} IS NULL OR dtl.drugId = :#{#param.drugId}) "
 //          + " AND (:#{#param.drugStoreId} IS NULL OR lower(c.drugStoreId) LIKE lower(concat('%',CONCAT(:#{#param.drugStoreId},'%'))))"
 //          + " AND (:#{#param.supplierDrugStoreId} IS NULL OR lower(c.supplierDrugStoreId) LIKE lower(concat('%',CONCAT(:#{#param.supplierDrugStoreId},'%'))))"
 //          + " AND (:#{#param.orderStatusId} IS NULL OR c.orderStatusId = :#{#param.orderStatusId}) "

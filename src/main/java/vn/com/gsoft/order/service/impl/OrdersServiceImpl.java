@@ -48,8 +48,8 @@ public class OrdersServiceImpl extends BaseServiceImpl<Orders, OrdersReq, Long> 
         hdr.setCreated(new Date());
         hdr.setOrderStatusId(OrderStatusId.BUYER_NEW.getValue());
         hdr.setCreatedByUserId(getLoggedUser().getId());
-        totalAmount = req.getChiTiets().stream().mapToDouble(x -> Double.valueOf(String.valueOf(x.getQuantity()))).sum();
-        hdr.setTotalAmount(BigDecimal.valueOf(totalAmount));
+//        totalAmount = req.getChiTiets().stream().mapToDouble(x -> Double.valueOf(String.valueOf(x.getQuantity()))).sum();
+//        hdr.setTotalAmount(BigDecimal.valueOf(totalAmount));
         Orders orders = hdrRepo.save(hdr);
         List<OrderDetails> orderDetails = saveChildren(orders.getId(), req);
         orders.setChiTiets(orderDetails);
@@ -111,7 +111,6 @@ public class OrdersServiceImpl extends BaseServiceImpl<Orders, OrdersReq, Long> 
 
     @Override
     public Orders init(Long id) throws Exception {
-        Profile currUser = getLoggedUser();
         Orders data = null;
         if (id == null) {
             data = new Orders();
@@ -139,7 +138,6 @@ public class OrdersServiceImpl extends BaseServiceImpl<Orders, OrdersReq, Long> 
 
     @Override
     public Page<Orders> searchPage(OrdersReq req) throws Exception {
-        Profile currUser = getLoggedUser();
         Pageable pageable = PageRequest.of(req.getPaggingReq().getPage(), req.getPaggingReq().getLimit());
         req.setRecordStatusId(RecordStatusContains.ACTIVE);
         Page<Orders> page = hdrRepo.searchPage(req, pageable);
@@ -149,15 +147,31 @@ public class OrdersServiceImpl extends BaseServiceImpl<Orders, OrdersReq, Long> 
                 Optional<UserProfile> object = userProfileRepository.findById(orders.getCreatedByUserId());
                 if(object.isPresent()){
                     UserProfile userProfile = object.get();
-                    orders.setCustomerFullName(userProfile.getUserName());
+                    orders.setStaffName(userProfile.getUserName());
                 }
             }
             Optional<OrderStatus> orderStatus = orderStatusRepository.findById(orders.getOrderStatusId());
             if(orderStatus.isPresent()){
                 orders.setOrderStatusText(orderStatus.get().getBuyerDisplayName());
             }
+            List<OrderDetails> orderDetails = dtlRepo.findAllByOrderId(orders.getId());
+            if(orderDetails.size() > 0){
+                orders.setTotalAmount(BigDecimal.valueOf(orderDetails.stream().mapToDouble(x -> x.getTotalAmount() != null ? Double.valueOf(String.valueOf(x.getTotalAmount())) : 0).sum()));
+                orders.setChiTiets(orderDetails);
+            }
         }
         return page;
+    }
+
+    @Override
+    public Orders sendOrder(OrdersReq req) throws Exception {
+        Optional<Orders> data = hdrRepo.findById(req.getId());
+        Orders orders = data.get();
+        orders.setOrderStatusId(req.getOrderStatusId());
+        Optional<OrderStatus> orderStatus = orderStatusRepository.findById(req.getOrderStatusId());
+        orders.setOrderStatusText(orderStatus.get().getBuyerDisplayName());
+        hdrRepo.save(orders);
+        return orders;
     }
 
 }

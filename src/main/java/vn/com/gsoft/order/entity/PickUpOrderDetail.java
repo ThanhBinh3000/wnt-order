@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -61,6 +63,12 @@ public class PickUpOrderDetail extends BaseEntity{
 
     @Transient
     private BigDecimal deliveryQuantity = BigDecimal.ZERO;
+    @Transient
+    private String maThuoc;
+    @Transient
+    private String tenThuoc;
+    @Transient
+    private List<DonViTinhs> unitList = new ArrayList<>();
 
 }
 

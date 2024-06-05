@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import vn.com.gsoft.order.constant.OrderStatusId;
+import vn.com.gsoft.order.model.dto.PickUpOrderReq;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -43,6 +45,8 @@ public class PickUpOrder extends BaseEntity {
 
     @Column(name="updated")
     private Date updated;
+    @Column(name="UpdatedBy_UserId")
+    private Long updatedByUserId;
 
     @Transient
     private int drugCount;
@@ -61,16 +65,19 @@ public class PickUpOrder extends BaseEntity {
 
     @Transient
     private String orderStatusName;
+    @Transient
+    private List<PickUpOrderDetail> chiTiets = new ArrayList<>();
 
-    public String getOrderStatusName() {
-        if (orderStatusId == OrderStatusId.BUYER_NEW) {
-            return "Đơn mới tạo";
-        }else if(orderStatusId == OrderStatusId.ORDER_UPDATED){
-            return "Đơn đã cập nhật";
-        }else if(orderStatusId == OrderStatusId.COMMPLETED){
-            return "Đơn đã xử lý";
-        }
-        return orderStatusName;
-    }
+
+//    public String getOrderStatusName() {
+//        if (orderStatusId == OrderStatusId.BUYER_NEW) {
+//            return "Đơn mới tạo";
+//        }else if(orderStatusId == OrderStatusId.ORDER_UPDATED){
+//            return "Đơn đã cập nhật";
+//        }else if(orderStatusId == OrderStatusId.COMMPLETED){
+//            return "Đơn đã xử lý";
+//        }
+//        return orderStatusName;
+//    }
 }
 

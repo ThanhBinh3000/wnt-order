@@ -116,5 +116,6 @@ public interface PickUpOrderDetailRepository extends BaseRepository<PickUpOrderD
 
   Optional<PickUpOrderDetail> findByDrugToBuyId(Long drugToBuyId);
 
+  void deleteAllByOrderId(Long orderId);
 
 }

@@ -10,18 +10,16 @@ import org.springframework.web.bind.annotation.*;
 import vn.com.gsoft.order.constant.PathContains;
 import vn.com.gsoft.order.model.dto.OrdersReq;
 import vn.com.gsoft.order.model.system.BaseResponse;
-import vn.com.gsoft.order.service.OrdersService;
+import vn.com.gsoft.order.service.OrderStatusService;
 import vn.com.gsoft.order.util.system.ResponseUtils;
-
-import java.io.IOException;
 
 @Slf4j
 @RestController
-@RequestMapping("/orders")
-public class OrdersController {
+@RequestMapping("/order-status")
+public class OrderStatusController {
 
     @Autowired
-    OrdersService service;
+    OrderStatusService service;
 
 
     @PostMapping(value = PathContains.URL_SEARCH_PAGE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -65,15 +63,4 @@ public class OrdersController {
         return ResponseEntity.ok(ResponseUtils.ok(service.delete(idSearchReq.getId())));
     }
 
-    @PostMapping(value = PathContains.URL_INIT, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<BaseResponse> init(@RequestBody OrdersReq objReq) throws Exception {
-        return ResponseEntity.ok(ResponseUtils.ok(service.init(objReq.getId())));
-    }
-
-    @PostMapping(value = "/sendOrder", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<BaseResponse> approve(@RequestBody OrdersReq objReq) throws Exception {
-        return ResponseEntity.ok(ResponseUtils.ok(service.sendOrder(objReq)));
-    }
 }

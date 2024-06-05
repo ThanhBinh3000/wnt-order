@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.com.gsoft.order.constant.PathContains;
+import vn.com.gsoft.order.model.dto.OrdersReq;
 import vn.com.gsoft.order.model.dto.PickUpOrderReq;
 import vn.com.gsoft.order.model.system.BaseResponse;
 import vn.com.gsoft.order.service.PickUpOrderService;
@@ -76,5 +77,11 @@ public class PickUpOrderController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<BaseResponse> delete(@Valid @RequestBody PickUpOrderReq idSearchReq) throws Exception {
         return ResponseEntity.ok(ResponseUtils.ok(service.delete(idSearchReq.getId())));
+    }
+
+    @PostMapping(value = PathContains.URL_INIT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<BaseResponse> init(@RequestBody OrdersReq objReq) throws Exception {
+        return ResponseEntity.ok(ResponseUtils.ok(service.init(objReq.getId())));
     }
 }

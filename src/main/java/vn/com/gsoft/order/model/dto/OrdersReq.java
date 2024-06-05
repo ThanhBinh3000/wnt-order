@@ -26,6 +26,7 @@ public class OrdersReq extends BaseRequest {
     private BigDecimal discount;
     private Long userId;
     private String drugStoreId;
+    private String drugId;
     private String supplierDrugStoreId;
     private Long orderStatusId;
     private Date orderDate;
