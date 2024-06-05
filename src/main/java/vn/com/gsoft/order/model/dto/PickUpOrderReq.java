@@ -1,9 +1,11 @@
 package vn.com.gsoft.order.model.dto;
 
 import lombok.Data;
+import vn.com.gsoft.order.entity.PickUpOrderDetail;
 import vn.com.gsoft.order.model.system.BaseRequest;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -24,4 +26,5 @@ public class PickUpOrderReq extends BaseRequest {
 
     private Date fromDate;
     private Date toDate;
+    private List<PickUpOrderDetail> chiTiets = new ArrayList<>();
 }

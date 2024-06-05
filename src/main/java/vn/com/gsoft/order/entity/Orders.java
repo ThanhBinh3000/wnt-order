@@ -100,5 +100,7 @@ public class Orders extends BaseEntity {
     private List<OrderDetails> chiTiets;
     @Transient
     private String orderStatusText;
+    @Transient
+    private String staffName;
 }
 

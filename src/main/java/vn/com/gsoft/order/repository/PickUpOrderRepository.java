@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import vn.com.gsoft.order.entity.Orders;
 import vn.com.gsoft.order.entity.PickUpOrder;
 import vn.com.gsoft.order.model.dto.PickUpOrderReq;
 
@@ -44,5 +45,8 @@ public interface PickUpOrderRepository extends BaseRepository<PickUpOrder, PickU
           + " ORDER BY c.id desc"
   )
   List<PickUpOrder> searchList(@Param("param") PickUpOrderReq param);
+
+  @Query(value = "SELECT MAX(po.OrderNumber) FROM PickUpOrder po", nativeQuery = true)
+  Integer findOrderNumberMax();
 
 }

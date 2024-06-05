@@ -11,5 +11,6 @@ public interface OrdersService extends BaseService<Orders, OrdersReq, Long> {
     Orders update(OrdersReq ordersReq) throws Exception;
     Orders detail(Long id) throws Exception;
     Orders init(Long id) throws Exception;
+    Orders sendOrder(OrdersReq ordersReq) throws Exception;
 
 }

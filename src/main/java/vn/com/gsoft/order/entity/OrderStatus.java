@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "OrderStatus")
-public class OrderStatus {
+public class OrderStatus extends BaseEntity {
     @Id
     @Column(name = "Id")
     @GeneratedValue(strategy=GenerationType.IDENTITY)

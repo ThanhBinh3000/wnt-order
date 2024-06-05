@@ -2,6 +2,7 @@ package vn.com.gsoft.order.service.impl;
 
 import jakarta.persistence.Tuple;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,19 +12,13 @@ import vn.com.gsoft.order.constant.EDrugToBuyStatus;
 import vn.com.gsoft.order.constant.OrderStatusId;
 import vn.com.gsoft.order.constant.RecordStatusContains;
 import vn.com.gsoft.order.entity.*;
-import vn.com.gsoft.order.model.dto.InventoryReq;
-import vn.com.gsoft.order.model.dto.PickUpOrderDetailReq;
-import vn.com.gsoft.order.model.dto.PickUpOrderReq;
-import vn.com.gsoft.order.model.dto.UserProfileReq;
+import vn.com.gsoft.order.model.dto.*;
 import vn.com.gsoft.order.model.system.Profile;
 import vn.com.gsoft.order.repository.*;
 import vn.com.gsoft.order.service.PickUpOrderService;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -36,6 +31,7 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
     private PickUpOrderDetailRepository dtlRepo;
 
     private KhachHangsRepository khachHangsRepository;
+    private DonViTinhsRepository donViTinhsRepository;
     
     private UserProfileRepository userProfileRepository;
 
@@ -48,6 +44,7 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
                                   PickUpOrderDetailRepository dtlRepo,
                                   KhachHangsRepository khachHangsRepository,
                                   UserProfileRepository userProfileRepository,
+                                  DonViTinhsRepository donViTinhsRepository,
                                   DrugToBuysRepository drugToBuysRepository,
                                   ThuocsRepository thuocsRepository,
                                   InventoryRepository inventoryRepository) {
@@ -58,6 +55,7 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
         this.userProfileRepository = userProfileRepository;
         this.drugToBuysRepository = drugToBuysRepository;
         this.thuocsRepository = thuocsRepository;
+        this.donViTinhsRepository = donViTinhsRepository;
         this.inventoryRepository = inventoryRepository;
     }
 
@@ -226,5 +224,117 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
         }
 
         return true;
+    }
+
+    @Override
+    public PickUpOrder init(Long id) throws Exception {
+        PickUpOrder data = null;
+        Integer orderNumberMax = hdrRepo.findOrderNumberMax();
+        if (id == null) {
+            data = new PickUpOrder();
+            data.setOrderNumber(orderNumberMax + 1);
+            data.setOrderDate(new Date());
+        } else {
+            Optional<PickUpOrder> phieuNhaps = hdrRepo.findById(id);
+            if (phieuNhaps.isPresent()) {
+                data = phieuNhaps.get();
+                data.setId(null);
+//                data.setOrderNumber(orderNumberMax);
+                data.setOrderDate(new Date());
+                data.setCreatedByUserId(null);
+                data.setModifiedByUserId(null);
+                data.setCreated(null);
+                data.setModified(null);
+            } else {
+                throw new Exception("Không tìm thấy phiếu copy!");
+            }
+        }
+        return data;
+    }
+
+    @Override
+    public PickUpOrder create(PickUpOrderReq req) throws Exception{
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        Double totalAmount = 0D;
+        PickUpOrder hdr = new PickUpOrder();
+        BeanUtils.copyProperties(req, hdr, "id");
+        hdr.setCreated(new Date());
+        hdr.setUpdated(new Date());
+        hdr.setOrderStatusId(vn.com.gsoft.order.entity.OrderStatusId.BUYER_NEW.getValue());
+        hdr.setCreatedByUserId(getLoggedUser().getId());
+        hdr.setUpdatedByUserId(getLoggedUser().getId());
+        hdr.setDrugStoreId(userInfo.getNhaThuoc().getMaNhaThuoc());
+//        totalAmount = req.getChiTiets().stream().mapToDouble(x -> Double.valueOf(String.valueOf(x.getQuantity()))).sum();
+//        hdr.setTotalAmount(BigDecimal.valueOf(totalAmount));
+        PickUpOrder orders = hdrRepo.save(hdr);
+        List<PickUpOrderDetail> orderDetails = saveChildren(orders.getId(), req);
+        orders.setChiTiets(orderDetails);
+        return orders;
+    }
+
+    private List<PickUpOrderDetail> saveChildren(Long idHdr, PickUpOrderReq req) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        // save chi tiết
+        dtlRepo.deleteAllByOrderId(idHdr);
+        for (PickUpOrderDetail chiTiet : req.getChiTiets()) {
+            chiTiet.setOrderId(idHdr);
+            chiTiet.setCreated(new Date());
+            chiTiet.setCreatedByUserId(getLoggedUser().getId());
+            chiTiet.setRecordStatusId(RecordStatusContains.ACTIVE);
+            chiTiet.setDrugStoreId(userInfo.getNhaThuoc().getMaNhaThuoc());
+        }
+        dtlRepo.saveAll(req.getChiTiets());
+        return req.getChiTiets();
+    }
+
+    @Override
+    public PickUpOrder update(PickUpOrderReq req) throws Exception{
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        PickUpOrder object = new PickUpOrder();
+        Optional<PickUpOrder> hdr = hdrRepo.findById(req.getId());
+        if(hdr.isPresent()){
+            object = hdr.get();
+            BeanUtils.copyProperties(req, object, "id");
+            object.setOrderStatusId(vn.com.gsoft.order.entity.OrderStatusId.BUYER_NEW.getValue());
+            object.setUpdated(new Date());
+
+            PickUpOrder orders = hdrRepo.save(object);
+            List<PickUpOrderDetail> orderDetails = saveChildren(orders.getId(), req);
+            orders.setChiTiets(orderDetails);
+        }
+        return object;
+    }
+
+    @Override
+    public PickUpOrder detail(Long id) throws Exception {
+        Profile userInfo = this.getLoggedUser();
+        if (userInfo == null)
+            throw new Exception("Bad request.");
+        Optional<PickUpOrder> hdr = Optional.empty();
+        hdr = hdrRepo.findById(id);
+        if(hdr.isPresent()){
+            PickUpOrder object = hdr.get();
+            Optional<KhachHangs> byId = khachHangsRepository.findById(object.getCusId());
+            byId.ifPresent(khachHangs -> object.setCusName(khachHangs.getTenKhachHang()));
+            List<PickUpOrderDetail> dtl = new ArrayList<>();
+            dtl = dtlRepo.findAllByOrderId(hdr.get().getId());
+            if(dtl.size() > 0){
+                dtl.forEach(item -> {
+                    Optional<Thuocs> thuocsOptional = thuocsRepository.findById(item.getDrugId());
+                    item.setMaThuoc(thuocsOptional.get().getMaThuoc());
+                    item.setTenThuoc(thuocsOptional.get().getTenThuoc());
+                    Optional<DonViTinhs> byId3 = donViTinhsRepository.findById(item.getUnitId());
+                    byId3.ifPresent(donViTinhs -> item.getUnitList().add(donViTinhs));
+                });
+                hdr.get().setChiTiets(dtl);
+            }
+        }
+        return hdr.get();
     }
 }
