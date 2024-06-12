@@ -60,6 +60,8 @@ public class PickUpOrderDetail extends BaseEntity{
 
     @Transient
     private BigDecimal receiptQuantity = BigDecimal.ZERO;
+    @Transient
+    private BigDecimal remainQuantity = BigDecimal.ZERO;
 
     @Transient
     private BigDecimal deliveryQuantity = BigDecimal.ZERO;
@@ -67,6 +69,8 @@ public class PickUpOrderDetail extends BaseEntity{
     private String maThuoc;
     @Transient
     private String tenThuoc;
+    @Transient
+    private String tenNhomThuoc;
     @Transient
     private List<DonViTinhs> unitList = new ArrayList<>();
 

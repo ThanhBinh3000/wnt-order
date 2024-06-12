@@ -15,6 +15,7 @@ import vn.com.gsoft.order.entity.*;
 import vn.com.gsoft.order.model.dto.*;
 import vn.com.gsoft.order.model.system.Profile;
 import vn.com.gsoft.order.repository.*;
+import vn.com.gsoft.order.repository.feign.InventoryFeign;
 import vn.com.gsoft.order.service.PickUpOrderService;
 
 import java.math.BigDecimal;
@@ -34,26 +35,36 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
     private DonViTinhsRepository donViTinhsRepository;
     
     private UserProfileRepository userProfileRepository;
+    private OrderStatusRepository orderStatusRepository;
 
     private DrugToBuysRepository drugToBuysRepository;
     private ThuocsRepository thuocsRepository;
+    private NhomThuocsRepository nhomThuocsRepository;
+
     private InventoryRepository inventoryRepository;
+    public InventoryFeign inventoryFeign;
 
     @Autowired
     public PickUpOrderServiceImpl(PickUpOrderRepository hdrRepo,
                                   PickUpOrderDetailRepository dtlRepo,
                                   KhachHangsRepository khachHangsRepository,
                                   UserProfileRepository userProfileRepository,
+                                  OrderStatusRepository orderStatusRepository,
                                   DonViTinhsRepository donViTinhsRepository,
                                   DrugToBuysRepository drugToBuysRepository,
+                                  InventoryFeign inventoryFeign,
                                   ThuocsRepository thuocsRepository,
+                                  NhomThuocsRepository nhomThuocsRepository,
                                   InventoryRepository inventoryRepository) {
         super(hdrRepo);
         this.hdrRepo = hdrRepo;
         this.dtlRepo = dtlRepo;
         this.khachHangsRepository = khachHangsRepository;
         this.userProfileRepository = userProfileRepository;
+        this.nhomThuocsRepository = nhomThuocsRepository;
+        this.inventoryFeign = inventoryFeign;
         this.drugToBuysRepository = drugToBuysRepository;
+        this.orderStatusRepository = orderStatusRepository;
         this.thuocsRepository = thuocsRepository;
         this.donViTinhsRepository = donViTinhsRepository;
         this.inventoryRepository = inventoryRepository;
@@ -88,6 +99,9 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
 
             Optional<UserProfile> userProfileOptional = userProfileRepository.findById(order.getCreatedByUserId());
             userProfileOptional.ifPresent(userProfile -> order.setCreateUserName(userProfile.getTenDayDu()));
+
+            Optional<OrderStatus> orderStatusOptional = orderStatusRepository.findById(order.getOrderStatusId());
+            orderStatusOptional.ifPresent(orderStatus -> order.setOrderStatusName(orderStatus.getBuyerDisplayName()));
 
             order.setListUserProfile(listUserProfile);
 
@@ -262,7 +276,7 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
         BeanUtils.copyProperties(req, hdr, "id");
         hdr.setCreated(new Date());
         hdr.setUpdated(new Date());
-        hdr.setOrderStatusId(vn.com.gsoft.order.entity.OrderStatusId.BUYER_NEW.getValue());
+//        hdr.setOrderStatusId(vn.com.gsoft.order.entity.OrderStatusId.BUYER_NEW.getValue());
         hdr.setCreatedByUserId(getLoggedUser().getId());
         hdr.setUpdatedByUserId(getLoggedUser().getId());
         hdr.setDrugStoreId(userInfo.getNhaThuoc().getMaNhaThuoc());
@@ -301,7 +315,7 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
         if(hdr.isPresent()){
             object = hdr.get();
             BeanUtils.copyProperties(req, object, "id");
-            object.setOrderStatusId(vn.com.gsoft.order.entity.OrderStatusId.BUYER_NEW.getValue());
+//            object.setOrderStatusId(vn.com.gsoft.order.entity.OrderStatusId.BUYER_NEW.getValue());
             object.setUpdated(new Date());
 
             PickUpOrder orders = hdrRepo.save(object);
@@ -322,19 +336,38 @@ public class PickUpOrderServiceImpl extends BaseServiceImpl<PickUpOrder, PickUpO
             PickUpOrder object = hdr.get();
             Optional<KhachHangs> byId = khachHangsRepository.findById(object.getCusId());
             byId.ifPresent(khachHangs -> object.setCusName(khachHangs.getTenKhachHang()));
+            Optional<UserProfile> userProfileOptional = userProfileRepository.findById(object.getCreatedByUserId());
+            userProfileOptional.ifPresent(userProfile -> object.setCreateUserName(userProfile.getTenDayDu()));
             List<PickUpOrderDetail> dtl = new ArrayList<>();
             dtl = dtlRepo.findAllByOrderId(hdr.get().getId());
             if(dtl.size() > 0){
                 dtl.forEach(item -> {
+                    InventoryReq inventoryReq = new InventoryReq();
                     Optional<Thuocs> thuocsOptional = thuocsRepository.findById(item.getDrugId());
                     item.setMaThuoc(thuocsOptional.get().getMaThuoc());
                     item.setTenThuoc(thuocsOptional.get().getTenThuoc());
                     Optional<DonViTinhs> byId3 = donViTinhsRepository.findById(item.getUnitId());
-                    byId3.ifPresent(donViTinhs -> item.getUnitList().add(donViTinhs));
+                    Optional<NhomThuocs> nhomThuocs = nhomThuocsRepository.findById(thuocsOptional.get().getNhomThuocMaNhomThuoc());
+                    nhomThuocs.ifPresent(nhomThuocs1 -> item.setTenNhomThuoc(nhomThuocs1.getTenNhomThuoc()));
+                    inventoryReq.setDrugID(item.getDrugId());
+                    inventoryReq.setDrugStoreID(thuocsOptional.get().getNhomThuocMaNhomThuoc().toString());
+                    HashMap<Integer, Double> inventory = getTotalInventory(inventoryReq);
+                    if(inventory.size() > 0){
+                        item.setRemainQuantity(BigDecimal.valueOf(inventory.get(item.getDrugId())));
+                    }
+                    if(byId3.isPresent()){
+                        item.getUnitList().add(byId3.get());
+                        item.setUnitName(byId3.get().getTenDonViTinh());
+                    }
                 });
                 hdr.get().setChiTiets(dtl);
             }
         }
         return hdr.get();
+    }
+
+    public HashMap<Integer, Double> getTotalInventory(InventoryReq inventoryReq) {
+        HashMap<Integer, Double> profile = inventoryFeign.getTotalInventory(inventoryReq);
+        return profile;
     }
 }

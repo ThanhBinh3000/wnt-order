@@ -85,7 +85,7 @@ public class Orders extends BaseEntity {
     private Long noteTypeId;
     @Column(name = "CustomerId")
     private Long customerId;
-    @Lob
+//    @Lob
     @Column(name = "CustomerAddress")
     private String customerAddress;
     @Column(name = "CustomerFullName")
